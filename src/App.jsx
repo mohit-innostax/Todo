@@ -17,7 +17,7 @@ function App() {
     cstatus: "",
     ppriority: "",
   });
-  const [error,setError]=useState(false);
+  const [error,setError]=useState(true);
   const arr1 = [
     {
       id: 1,
@@ -67,10 +67,9 @@ function App() {
     return temp ? JSON.parse(temp) : [];
   });
 
-  useEffect(() => {
-    let date = new Date();
-    console.log(date.getFullYear() + 1);
-  }, []);
+  useEffect(()=>{
+    localStorage.setItem("tasks",JSON.stringify(arr));
+  },[arr])
 
   const changeStatus = (id) => {
     setEditId(id);
@@ -214,9 +213,11 @@ function App() {
                 return all || item.When.toLowerCase() === status;
               })
               .map((item) => (
+                
                 <tr key={item.id} className="text-center w-full h-full">
                   {editId === item.id ? (
                     <>
+                  
                       <td className="border p-2">
                         <input
                           className="border p-1 w-full rounded-md"
@@ -249,7 +250,8 @@ function App() {
                     </>
                   ) : (
                     <>
-                      <td key={item.id} className="border p-2">
+                       
+                      <td key={item.id} className="border p-2" >
                         {item.task}
                       </td>
                       <td className="border p-2">{item.status}</td>
@@ -274,7 +276,7 @@ function App() {
               ))}
           </tbody>
         </table>
-        {arr.length === 0 ? <div className="text-red-600 text-xl py-5">Their is no task present currently, please add some new task</div>: <div></div> }
+        {arr.length === 0 && <div className="text-2xl text-red-600 p-4">Your task list is empty, Please add some new tasks!!</div>}
       </div>
     </>
   );
