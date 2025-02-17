@@ -12,77 +12,44 @@ function App() {
   const [editId, setEditId] = useState(null);
   const [newStatus, setNewStatus] = useState("");
   const [newTaskName, setNewTaskName] = useState("");
+  const [newPriority, setNewPriority] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     cstatus: "",
     ppriority: "",
   });
-  const [error,setError]=useState(true);
-  const arr1 = [
-    {
-      id: 1,
-      task: "Go To market",
-      status: "Pending",
-      When: "Today",
-    },
-    {
-      id: 2,
-      task: "Go to gym",
-      status: "Pending",
-      When: "Today",
-    },
-    {
-      id: 3,
-      task: "Go to buy mobile",
-      status: "Pending",
-      When: "Any Day",
-    },
-    {
-      id: 4,
-      task: "Go to barber Shop",
-      status: "Pending",
-      When: "Any Day",
-    },
-    {
-      id: 5,
-      task: "Do LeetCode",
-      status: "Pending",
-      When: "Today",
-    },
-    {
-      id: 6,
-      task: "Complete project",
-      status: "Pending",
-      When: "Today",
-    },
-    {
-      id: 7,
-      task: "Visit Friend's home",
-      status: "Pending",
-      When: "Today",
-    },
-  ];
+
+  const [searchData, setSearchData] = useState({
+    searchName: "",
+    searchStatus: "",
+    searchPriority: "",
+  });
+
+  const [error, setError] = useState(true);
+
   const [arr, setArr] = useState(() => {
     const temp = localStorage.getItem("tasks");
     return temp ? JSON.parse(temp) : [];
   });
-
-  useEffect(()=>{
-    localStorage.setItem("tasks",JSON.stringify(arr));
-  },[arr])
 
   const changeStatus = (id) => {
     setEditId(id);
     const temp = arr.find((task) => task.id === id);
     setNewStatus(temp.status);
     setNewTaskName(temp.task);
+    setNewPriority(temp.When);
   };
 
   const saveStatus = (id) => {
     setArr(
       arr.map((tasks) =>
         tasks.id === id
-          ? { ...tasks, task: newTaskName, status: newStatus }
+          ? {
+              ...tasks,
+              task: newTaskName,
+              status: newStatus,
+              When: newPriority,
+            }
           : tasks
       )
     );
@@ -110,49 +77,73 @@ function App() {
       cstatus: "",
       ppriority: "",
     });
-    localStorage.setItem("tasks", JSON.stringify(arr));
   };
+  localStorage.setItem("tasks", JSON.stringify(arr));
   const isTaskComplete =
     formData.name && formData.cstatus && formData.ppriority;
 
   const handleChange = (e) => {
     e.target.value === "all" ? setAll(true) : setAll(false);
-    console.log(e.target.value);
+    // console.log(e.target.value);
     setStatus(e.target.value);
   };
+
+  const sortedArr = [...arr].sort((a, b) => {
+    const orderToFollow = { High: 1, Medium: 2, Low: 3 };
+    return orderToFollow[a.When] - orderToFollow[b.When];
+  });
+  localStorage.setItem("tasks", JSON.stringify(arr));
 
   return (
     <>
       <div className="flex bg-black text-white h-16 mt-4 justify-center items-center top-0 sticky text-4xl">
         TODO App
       </div>
-      <div className="flex justify-center items-center p-6">
-      <select
-        className="flex justify-center  mt-6 gap-4 border-5 p-3 rounded-md"
-        value={status}
-        onChange={handleChange}
-      >
-        <option value="" disabled selected>
-          Select Time
-        </option>
-        <option value="all">All</option>
-        <option
-          className={`bg-gray-100 p-4 rounded-md hover:bg-green-200 ease-in-out 2s ${
-            toggle === "today" ? "bg-green-500" : ""
-          } `}
-          value="today"
+      <div className="flex justify-center items-center px-3 py-6">
+        <span className="text-3xl px-5 py-5  ">
+          Search Tasks based on your choice
+        </span>
+      </div>
+      <div className="flex gap-4 mb-4 ">
+        <input
+          className="border-2 p-2 rounded w-1/3  "
+          value={searchData.searchName}
+          placeholder="Enter Task Name"
+          onChange={(e) =>
+            setSearchData({ ...searchData, searchName: e.target.value })
+          }
+        />
+        <select
+          value={searchData.searchStatus}
+          onChange={(e) => {
+            setAll(false);
+            setSearchData({ ...searchData, searchStatus: e.target.value });
+          }}
+          className=" border-2 p-2 rounded w-1/4"
         >
-          Today
-        </option>
-        <option
-          className={`bg-gray-100 p-4 rounded-md hover:bg-green-200 ease-in-out 2s ${
-            toggle === "any day" ? "bg-green-500" : ""
-          } `}
-          value="any day"
+          <option value="" disabled selected>
+            Select Status
+          </option>
+          <option value="ready for deployment">Ready for Deployment</option>
+          <option value="in progress">In Progress</option>
+          <option value="development review">Development Review</option>
+          <option value="completed">Completed</option>
+        </select>
+        <select
+          value={searchData.searchPriority}
+          onChange={(e) => {
+            setAll(false);
+            setSearchData({ ...searchData, searchPriority: e.target.value });
+          }}
+          className="border-2 p-2 rounded-md"
         >
-          Any day
-        </option>
-      </select>
+          <option value="" disabled selected>
+            Select Priority
+          </option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
       </div>
       <div className="bg-gray-200 mt-5 mx-4 gap-11 p-5 ">
         <div className="flex gap-4 mb-4 ">
@@ -187,12 +178,15 @@ function App() {
             <option value="" disabled selected>
               Select Priority
             </option>
-            <option value="Today">Today</option>
-            <option value="Any Day">Any Day</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
           </select>
           <button
             disabled={!isTaskComplete}
-            className={` bg-green-500 text-white px-4 py-2 rounded-md ${!isTaskComplete? "cursor-not-allowed":"cursor-pointer"}`}
+            className={` bg-green-500 text-white px-4 py-2 rounded-md ${
+              !isTaskComplete ? "cursor-not-allowed" : "cursor-pointer"
+            }`}
             onClick={() => {
               handleError();
             }}
@@ -208,16 +202,20 @@ function App() {
             <th className="border p-2">Action</th>
           </tr>
           <tbody>
-            {arr
+            {sortedArr
               .filter((item) => {
-                return all || item.When.toLowerCase() === status;
+                return (
+                  all ||
+                  item.task.toLowerCase() === searchData.searchName ||
+                  item.status.toLowerCase() === searchData.searchStatus ||
+                  item.When.toLowerCase() ===
+                    searchData.searchPriority.toLowerCase()
+                );
               })
               .map((item) => (
-                
                 <tr key={item.id} className="text-center w-full h-full">
                   {editId === item.id ? (
                     <>
-                  
                       <td className="border p-2">
                         <input
                           className="border p-1 w-full rounded-md"
@@ -238,7 +236,17 @@ function App() {
                           <option value="Completed">Completed</option>
                         </select>
                       </td>
-                      <td className="border p-2">{item.When}</td>
+                      <td className="border p-2">
+                        <select
+                          value={newPriority}
+                          onChange={(e) => setNewPriority(e.target.value)}
+                          className=" border p-1 rounded-md w-full "
+                        >
+                          <option value="High">High</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Low">Low</option>
+                        </select>
+                      </td>
                       <td className="border p-2">
                         <button
                           className="px-3 py-1 bg-blue-300 rounded cursor-pointer"
@@ -250,12 +258,19 @@ function App() {
                     </>
                   ) : (
                     <>
-                       
-                      <td key={item.id} className="border p-2" >
+                      <td key={item.id} className="border p-2">
                         {item.task}
                       </td>
                       <td className="border p-2">{item.status}</td>
-                      <td className="border p-2">{item.When}</td>
+                      <td
+                        className={`border p-2 ${
+                          item.When === "High" && "bg-red-500"
+                        } ${item.When === "Medium" && "bg-yellow-500"} ${
+                          item.When === "Low" && "bg-green-500"
+                        }`}
+                      >
+                        {item.When}
+                      </td>
                       <td className="border-3 p-3.5 flex justify-center gap-2 relative max-h-full">
                         <FaPen
                           className="text-blue-500 cursor-pointer"
@@ -276,7 +291,11 @@ function App() {
               ))}
           </tbody>
         </table>
-        {arr.length === 0 && <div className="text-2xl text-red-600 p-4">Your task list is empty, Please add some new tasks!!</div>}
+        {arr.length === 0 && (
+          <div className="text-2xl text-red-600 p-4">
+            Your task list is empty, Please add some new tasks!!
+          </div>
+        )}
       </div>
     </>
   );
